@@ -7,11 +7,16 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pulp --psc-package build -- --stash --censor-lib",
+    "test": "pulp --psc-package test"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "puppeteer": "^1.4.0"
+    "psc-package": "^0.3.2",
+    "pulp": "^12.3.0",
+    "puppeteer": "^1.4.0",
+    "purescript": "^0.12.0",
+    "purescript-psa": "^0.6.0"
   }
 }
