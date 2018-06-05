@@ -11,6 +11,7 @@ import Effect.Aff (Aff)
 import Effect.Exception (Error)
 import Effect.Uncurried as EU
 import Foreign (Foreign)
+import Data.Map (Map)
 import Node.Buffer (Buffer)
 import Prim.Row as Row
 import Unsafe.Coerce (unsafeCoerce)
@@ -19,6 +20,8 @@ foreign import data Puppeteer :: Type
 foreign import data Browser :: Type
 foreign import data Page :: Type
 foreign import data ElementHandle :: Type
+foreign import data Request :: Type
+foreign import data Response :: Type
 
 newtype URL = URL String
 derive instance newtypeURL :: Newtype URL _
@@ -116,6 +119,12 @@ onPageError = EU.runEffectFn3 _on "pageerror"
 onLoad :: EU.EffectFn1 Unit Unit -> Page -> Effect Unit
 onLoad = EU.runEffectFn3 _on "load"
 
+onRequest :: EU.EffectFn1 Request Unit -> Page -> Effect Unit
+onRequest = EU.runEffectFn3 _on "request"
+
+onResponse :: EU.EffectFn1 Response Unit -> Page -> Effect Unit
+onResponse = EU.runEffectFn3 _on "response"
+
 pageWaitForSelector
   :: forall options trash
    . Row.Union options trash
@@ -168,6 +177,42 @@ getLocationRef p = Promise.toAffE $ FU.runFn1 _getLocationHref p
 unsafeEvaluateStringFunction :: String -> Page -> Aff Foreign
 unsafeEvaluateStringFunction = runPromiseAffE2 _unsafeEvaluateStringFunction
 
+response :: Request -> Effect Response
+response r = EU.runEffectFn1 _response r
+
+buffer :: Response -> Aff Buffer
+buffer = runPromiseAffE1 _buffer
+
+fromCache :: Response -> Effect Boolean
+fromCache = EU.runEffectFn1 _fromCache
+
+fromServiceWorker :: Response -> Effect Boolean
+fromServiceWorker = EU.runEffectFn1 _fromServiceWorker
+
+headers :: Response -> Effect (Map String (Array String))
+headers = EU.runEffectFn1 _headers
+
+json :: Response -> Effect (Map String (Array String)) -- json
+json = EU.runEffectFn1 _json
+
+ok :: Response -> Effect Boolean
+ok = EU.runEffectFn1 _ok
+
+request :: Response -> Effect Request
+request = EU.runEffectFn1 _request
+
+-- securityDetails :: Response -> Aff (Maybe SecurityDetails)
+-- securityDetails = runPromiseAffE1 _securityDetails
+
+status :: Response -> Effect Int
+status = EU.runEffectFn1 _status
+
+text :: Response -> Aff String
+text = runPromiseAffE1 _text
+
+url :: Response -> Effect String
+url r = EU.runEffectFn1 _url r
+
 runPromiseAffE1 :: forall a o. FU.Fn1 a (Effect (Promise o)) -> a -> Aff o
 runPromiseAffE1 f a = Promise.toAffE $ FU.runFn1 f a
 
@@ -196,3 +241,16 @@ foreign import _click :: FU.Fn2 Selector Page (Effect (Promise Unit))
 foreign import _waitForNavigation :: forall options. FU.Fn2 options Page (Effect (Promise Unit))
 foreign import _getLocationHref :: FU.Fn1 Page (Effect (Promise String))
 foreign import _unsafeEvaluateStringFunction :: FU.Fn2 String Page (Effect (Promise Foreign))
+
+foreign import _response :: EU.EffectFn1 Request Response
+foreign import _buffer :: FU.Fn1 Response (Effect (Promise Buffer))
+foreign import _fromCache :: EU.EffectFn1 Response Boolean
+foreign import _fromServiceWorker :: EU.EffectFn1 Response Boolean
+foreign import _headers :: EU.EffectFn1 Response (Map String (Array String))
+foreign import _json :: EU.EffectFn1 Response (Map String (Array String)) -- json
+foreign import _ok :: EU.EffectFn1 Response Boolean
+foreign import _request :: EU.EffectFn1 Response Request
+-- foreign import _securityDetails :: FU.Fn1 Response (Effect (Promise (Maybe SecurityDetails)))
+foreign import _status :: EU.EffectFn1 Response Int
+foreign import _text :: FU.Fn1 Response (Effect (Promise String))
+foreign import _url :: EU.EffectFn1 Response String

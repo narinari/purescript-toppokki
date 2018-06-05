@@ -3,12 +3,16 @@ module Test.Main where
 import Prelude
 
 import Data.Maybe (Maybe(..), isJust)
+import Data.Newtype (unwrap)
 import Data.String as String
 import Effect (Effect)
-import Effect.Aff (launchAff_, makeAff)
+import Effect.Aff (Aff, launchAff_, makeAff)
 import Effect.Class (liftEffect)
 import Effect.Ref as Ref
 import Effect.Uncurried as EU
+import Node.Encoding (Encoding(..))
+import Node.FS.Async (readTextFile)
+import Node.Path (FilePath)
 import Node.Process (cwd)
 import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
@@ -31,6 +35,15 @@ tests dir = runTest do
     test "can screenshot and pdf output a loaded page" do
       browser <- T.launch {}
       page <- T.newPage browser
+      liftEffect $ T.onResponse (EU.mkEffectFn1 \res -> do
+          u <- T.url res
+          when (u == unwrap crashUrl) do
+            launchAff_ do
+              c <- T.text res
+              c2 <- readTextFileAff $ dir <> "/test/crash.html"
+              Assert.assert "content is equal to file" (c == c2)
+          pure unit
+          ) page
       T.goto crashUrl page
       content <- T.content page
       Assert.assert "content is non-empty string" (String.length content > 0)
@@ -65,3 +78,8 @@ tests dir = runTest do
         ) page
       launchAff_ $ T.goto url page
       pure mempty
+
+readTextFileAff :: FilePath -> Aff String
+readTextFileAff name = makeAff \cb -> do
+  readTextFile UTF8 name cb
+  pure mempty

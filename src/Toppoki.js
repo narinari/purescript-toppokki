@@ -97,3 +97,51 @@ exports._unsafeEvaluateStringFunction = function(string, page) {
     return page.evaluate(string);
   };
 };
+
+exports._response = function(request) {
+  return request.response();
+};
+
+exports._buffer = function(response) {
+  return function() {
+    return response.buffer();
+  };
+};
+
+exports._fromCache = function(response) {
+  return response.fromCache();
+};
+
+exports._fromServiceWorker = function(response) {
+  return response.fromServiceWorker();
+};
+
+exports._headers = function(response) {
+  return response.headers();
+};
+
+exports._json = function(response) {
+  return response.json();
+};
+
+exports._ok = function(response) {
+  return response.ok();
+};
+
+exports._request = function(response) {
+  return response.request();
+};
+
+exports._status = function(response) {
+  return response.status();
+};
+
+exports._text = function(response) {
+  return function() {
+    return response.text();
+  };
+};
+
+exports._url = function(response) {
+  return response.url();
+};
