@@ -5,6 +5,7 @@ import Prelude
 import Data.Maybe (Maybe(..), isJust)
 import Data.Newtype (unwrap)
 import Data.String as String
+import Debug.Trace (traceM)
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_, makeAff)
 import Effect.Class (liftEffect)
@@ -42,6 +43,16 @@ tests dir = runTest do
               c <- T.text res
               c2 <- readTextFileAff $ dir <> "/test/crash.html"
               Assert.assert "content is equal to file" (c == c2)
+              json <- T.json res
+              traceM json
+            hs <- T.headers res
+            traceM hs
+            fc <- T.fromCache res
+            traceM fc
+            ok <- T.ok res
+            traceM ok
+            st <- T.status res
+            traceM st
           pure unit
           ) page
       T.goto crashUrl page

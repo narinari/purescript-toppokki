@@ -121,7 +121,9 @@ exports._headers = function(response) {
 };
 
 exports._json = function(response) {
-  return response.json();
+  return function() {
+    return response.json();
+  };
 };
 
 exports._ok = function(response) {

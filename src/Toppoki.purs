@@ -4,14 +4,15 @@ import Prelude
 
 import Control.Promise (Promise)
 import Control.Promise as Promise
+import Data.Either (Either)
 import Data.Function.Uncurried as FU
+import Data.Map (Map)
 import Data.Newtype (class Newtype)
 import Effect (Effect)
-import Effect.Aff (Aff)
+import Effect.Aff (Aff, try)
 import Effect.Exception (Error)
 import Effect.Uncurried as EU
 import Foreign (Foreign)
-import Data.Map (Map)
 import Node.Buffer (Buffer)
 import Prim.Row as Row
 import Unsafe.Coerce (unsafeCoerce)
@@ -192,8 +193,8 @@ fromServiceWorker = EU.runEffectFn1 _fromServiceWorker
 headers :: Response -> Effect (Map String (Array String))
 headers = EU.runEffectFn1 _headers
 
-json :: Response -> Effect (Map String (Array String)) -- json
-json = EU.runEffectFn1 _json
+json :: Response -> Aff (Either Error Foreign)
+json = try <<< runPromiseAffE1 _json
 
 ok :: Response -> Effect Boolean
 ok = EU.runEffectFn1 _ok
@@ -247,7 +248,7 @@ foreign import _buffer :: FU.Fn1 Response (Effect (Promise Buffer))
 foreign import _fromCache :: EU.EffectFn1 Response Boolean
 foreign import _fromServiceWorker :: EU.EffectFn1 Response Boolean
 foreign import _headers :: EU.EffectFn1 Response (Map String (Array String))
-foreign import _json :: EU.EffectFn1 Response (Map String (Array String)) -- json
+foreign import _json :: FU.Fn1 Response (Effect (Promise Foreign))
 foreign import _ok :: EU.EffectFn1 Response Boolean
 foreign import _request :: EU.EffectFn1 Response Request
 -- foreign import _securityDetails :: FU.Fn1 Response (Effect (Promise (Maybe SecurityDetails)))
